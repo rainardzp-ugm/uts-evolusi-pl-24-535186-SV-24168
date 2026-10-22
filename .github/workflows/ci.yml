@@ -64,3 +64,34 @@ jobs:
         run: |
           cd frontend
           npm run build
+  
+  deploy:
+      name: Deploy to Production
+      needs: [test-backend, build-frontend]
+      runs-on: ubuntu-latest
+      if: github.ref == 'refs/heads/main' && github.event_name == 'push'
+
+      steps:
+        - name: Checkout Code
+          uses: actions/checkout@v4
+
+        - name: Log in to GitHub Container Registry
+          uses: docker/login-action@v3
+          with:
+            registry: ghcr.io
+            username: ${{ github.actor }}
+            password: ${{ secrets.GITHUB_TOKEN }}
+
+        - name: Build and Push Backend Image
+          uses: docker/build-push-action@v5
+          with:
+            context: ./backend
+            push: true
+            tags: ghcr.io/${{ github.repository }}/backend:latest
+
+        - name: Build and Push Frontend Image
+          uses: docker/build-push-action@v5
+          with:
+            context: ./frontend
+            push: true
+            tags: ghcr.io/${{ github.repository }}/frontend:latest
