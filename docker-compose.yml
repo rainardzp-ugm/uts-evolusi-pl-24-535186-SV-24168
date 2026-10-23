@@ -18,7 +18,7 @@ services:
     container_name: app_backend
     restart: always
     ports:
-      - "8000:8000"
+      - "8000:80"
     environment:
       APP_KEY: ${APP_KEY:-base64:Jq4wS8Y0k3P9x4V7m2K1N5L8P3Q6R9T2U5V8W1X4Y7Z=}
       DB_CONNECTION: mysql
