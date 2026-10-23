@@ -1,0 +1,53 @@
+services:
+  db:
+    image: mysql:8.0
+    container_name: app_db
+    restart: always
+    environment:
+      MYSQL_DATABASE: ${DB_DATABASE:-uts_pl_laravel_db}
+      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD:-secret123}
+    volumes:
+      - db_data:/var/lib/mysql
+    networks:
+      - app-network
+
+  backend:
+    build:
+      context: ./backend
+      dockerfile: Dockerfile
+    container_name: app_backend
+    restart: always
+    ports:
+      - "8000:8000"
+    environment:
+      APP_KEY: ${APP_KEY:-base64:Jq4wS8Y0k3P9x4V7m2K1N5L8P3Q6R9T2U5V8W1X4Y7Z=}
+      DB_CONNECTION: mysql
+      DB_HOST: db
+      DB_PORT: 3306
+      DB_DATABASE: ${DB_DATABASE:-uts_pl_laravel_db}
+      DB_USERNAME: root
+      DB_PASSWORD: ${DB_PASSWORD:-secret123}
+    depends_on:
+      - db
+    networks:
+      - app-network
+
+  frontend:
+    build:
+      context: ./frontend
+      dockerfile: Dockerfile
+    container_name: app_frontend
+    restart: always
+    ports:
+      - "80:80"
+    depends_on:
+      - backend
+    networks:
+      - app-network
+
+networks:
+  app-network:
+    driver: bridge
+
+volumes:
+  db_data:
