@@ -24,9 +24,17 @@ COPY . .
 
 # Autoload optimization & set permission
 RUN composer dump-autoload --optimize \
-    && chown -R www-data:www-data storage bootstrap/cache
+    && chown -R www-data:www-data storage bootstrap/cache \
+    && tr -d '\r' < docker-entrypoint.sh > /tmp/docker-entrypoint \
+    && mv /tmp/docker-entrypoint docker-entrypoint.sh \
+    && chmod +x docker-entrypoint.sh
 
-EXPOSE 8000
+RUN cp docker-entrypoint.sh /usr/local/bin/docker-entrypoint
 
-# Jalankan Laravel langsung menggunakan server bawaan FrankenPHP
+EXPOSE 80
+
+HEALTHCHECK --interval=10s --timeout=5s --start-period=10s --retries=3 \
+    CMD wget -q -O /dev/null http://127.0.0.1/ || exit 1
+
+ENTRYPOINT ["sh", "/usr/local/bin/docker-entrypoint"]
 CMD ["frankenphp", "php-server", "--root", "public/"]

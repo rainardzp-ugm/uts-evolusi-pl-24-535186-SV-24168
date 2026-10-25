@@ -5,7 +5,12 @@ services:
     restart: always
     environment:
       MYSQL_DATABASE: ${DB_DATABASE:-uts_pl_laravel_db}
-      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD:-secret123}
+      MYSQL_ROOT_PASSWORD: ${DB_PASSWORD}
+    healthcheck:
+      test: ["CMD", "mysqladmin", "ping", "-h", "localhost", "-uroot", "-p${DB_PASSWORD}"]
+      interval: 5s
+      timeout: 5s
+      retries: 12
     volumes:
       - db_data:/var/lib/mysql
     networks:
@@ -18,17 +23,18 @@ services:
     container_name: app_backend
     restart: always
     ports:
-      - "8000:8000"
+      - "8000:80"
     environment:
-      APP_KEY: ${APP_KEY:-base64:Jq4wS8Y0k3P9x4V7m2K1N5L8P3Q6R9T2U5V8W1X4Y7Z=}
+      APP_KEY: ${APP_KEY}
       DB_CONNECTION: mysql
       DB_HOST: db
       DB_PORT: 3306
       DB_DATABASE: ${DB_DATABASE:-uts_pl_laravel_db}
       DB_USERNAME: root
-      DB_PASSWORD: ${DB_PASSWORD:-secret123}
+      DB_PASSWORD: ${DB_PASSWORD}
     depends_on:
-      - db
+      db:
+        condition: service_healthy
     networks:
       - app-network
 
