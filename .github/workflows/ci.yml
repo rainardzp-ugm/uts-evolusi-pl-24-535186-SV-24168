@@ -99,3 +99,6 @@ jobs:
             context: ./frontend
             push: true
             tags: ghcr.io/${{ github.repository }}/frontend:${{ github.sha }}
+
+        - name: Normalize image repository name
+          run: echo "IMAGE_REPOSITORY=$(echo '${{ github.repository }}' | tr '[:upper:]' '[:lower:]')" >> "$GITHUB_ENV"
